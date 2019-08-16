@@ -9,6 +9,10 @@ go get github.com/wybiral/ipv4scan
 go build github.com/wybiral/ipv4scan/cmd/scan
 ```
 ### Usage
+Specify thread count:
+```
+./scan -n 1000
+```
 To start scanning with a blacklist:
 ```
 ./scan -b blacklist.conf
