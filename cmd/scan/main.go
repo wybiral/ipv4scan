@@ -9,7 +9,7 @@ import (
 	"os"
 	"time"
 
-	"github.com/wybiral/scan/pkg/scan"
+	"github.com/wybiral/ipv4scan/pkg/scan"
 	"golang.org/x/net/proxy"
 )
 
