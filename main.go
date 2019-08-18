@@ -14,7 +14,7 @@ import (
 func main() {
 	rand.Seed(time.Now().UnixNano())
 	// setup blacklist flag
-	blacklist := "blacklist.conf"
+	blacklist := ""
 	flag.StringVar(
 		&blacklist,
 		"b",
