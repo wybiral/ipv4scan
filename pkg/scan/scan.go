@@ -38,34 +38,34 @@ func NewScanner(threads int) *Scanner {
 }
 
 // Read header from addr as bytes
-func (s *Scanner) scan(addr string) ([]byte, error) {
+func (s *Scanner) scan(addr string) ([]byte, bool) {
 	ctx, cancel := context.WithTimeout(context.Background(), s.DialTimeout)
 	defer cancel()
 	conn, err := s.Dialer.DialContext(ctx, "tcp", addr)
 	if err != nil {
-		return nil, err
+		return nil, false
 	}
 	defer conn.Close()
 	buf := make([]byte, 4096)
 	conn.SetDeadline(time.Now().Add(s.ReadTimeout))
 	_, err = conn.Write(s.Request)
 	if err != nil {
-		return nil, err
+		return nil, false
 	}
 	_, err = conn.Write([]byte("\r\n\r\n"))
 	if err != nil {
-		return nil, err
+		return nil, false
 	}
 	n, err := conn.Read(buf)
 	if err != nil {
-		return nil, err
+		return nil, false
 	}
 	data := buf[:n]
 	parts := bytes.SplitN(data, []byte("\r\n\r\n"), 2)
-	if len(parts) == 2 {
-		return parts[0], nil
+	if len(parts) != 2 {
+		return nil, false
 	}
-	return nil, errors.New("scanner: invalid http header")
+	return parts[0], true
 }
 
 // Infinitely scan random addresses and pump valid results to ch
@@ -80,11 +80,10 @@ func (s *Scanner) worker(ch chan *Result) {
 		}
 		port := s.Port
 		addr := fmt.Sprintf("%v:%d", ip, port)
-		headers, err := s.scan(addr)
-		if err != nil {
-			continue
+		headers, ok := s.scan(addr)
+		if ok {
+			ch <- &Result{IP: ip, Port: port, Headers: string(headers)}
 		}
-		ch <- &Result{IP: ip, Port: port, Headers: string(headers)}
 	}
 }
 
