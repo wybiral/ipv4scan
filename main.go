@@ -29,6 +29,14 @@ func main() {
 		threads,
 		"number of scanner threads",
 	)
+	// setup port flag
+	port := 80
+	flag.IntVar(
+		&port,
+		"p",
+		port,
+		"port to scan",
+	)
 	// setup request flag
 	request := "GET / HTTP/1.0"
 	flag.StringVar(
@@ -47,6 +55,7 @@ func main() {
 	)
 	flag.Parse()
 	scanner := scan.NewScanner(threads)
+	scanner.Port = port
 	// setup blacklist
 	if len(blacklist) > 0 {
 		err := scanner.Blacklist.Parse(blacklist)
