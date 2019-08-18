@@ -13,12 +13,16 @@ Specify thread count:
 ```
 ./ipv4scan -n 1000
 ```
-To start scanning with a blacklist:
+Specify blacklist:
 ```
 ./ipv4scan -b blacklist.conf
 ```
-To start scanning through a SOCKS proxy (such as Tor):
+Scan through SOCKS proxy (such as Tor):
 ```
 ./ipv4scan -p socks5://127.0.0.1:9050
+```
+Specify HTTP request line:
+```
+./ipv4scan -r "GET /some_resource HTTP/1.1"
 ```
 Example blacklist file: [blacklist.conf](https://github.com/wybiral/ipv4scan/blob/master/blacklist.conf)
