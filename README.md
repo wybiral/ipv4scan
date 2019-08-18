@@ -19,7 +19,7 @@ Specify blacklist:
 ```
 Scan through SOCKS proxy (such as Tor):
 ```
-./ipv4scan -p socks5://127.0.0.1:9050
+./ipv4scan -x socks5://127.0.0.1:9050
 ```
 Specify HTTP request line:
 ```

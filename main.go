@@ -29,14 +29,6 @@ func main() {
 		threads,
 		"number of scanner threads",
 	)
-	// setup proxy flag
-	proxyURL := ""
-	flag.StringVar(
-		&proxyURL,
-		"p",
-		proxyURL,
-		"proxy URL",
-	)
 	// setup request flag
 	request := "GET / HTTP/1.0"
 	flag.StringVar(
@@ -44,6 +36,14 @@ func main() {
 		"r",
 		request,
 		"HTTP request",
+	)
+	// setup proxy flag
+	proxyURL := ""
+	flag.StringVar(
+		&proxyURL,
+		"x",
+		proxyURL,
+		"proxy URL",
 	)
 	flag.Parse()
 	scanner := scan.NewScanner(threads)
@@ -54,16 +54,16 @@ func main() {
 			log.Fatal(err)
 		}
 	}
+	// setup request
+	if len(request) > 0 {
+		scanner.Request = []byte(request)
+	}
 	// setup proxy
 	if len(proxyURL) > 0 {
 		err := scanner.SetProxy(proxyURL)
 		if err != nil {
 			log.Fatal(err)
 		}
-	}
-	// setup request
-	if len(request) > 0 {
-		scanner.Request = []byte(request)
 	}
 	encoder := json.NewEncoder(os.Stdout)
 	for result := range scanner.Start() {
