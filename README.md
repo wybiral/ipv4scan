@@ -6,19 +6,19 @@ go get github.com/wybiral/ipv4scan
 ```
 ### Build
 ```
-go build github.com/wybiral/ipv4scan/cmd/scan
+go build github.com/wybiral/ipv4scan
 ```
 ### Usage
 Specify thread count:
 ```
-./scan -n 1000
+./ipv4scan -n 1000
 ```
 To start scanning with a blacklist:
 ```
-./scan -b blacklist.conf
+./ipv4scan -b blacklist.conf
 ```
 To start scanning through a SOCKS proxy (such as Tor):
 ```
-./scan -p socks5://127.0.0.1:9050
+./ipv4scan -p socks5://127.0.0.1:9050
 ```
-Example blacklist file located at [configs/blacklist.conf](https://github.com/wybiral/ipv4scan/blob/master/configs/blacklist.conf)
+Example blacklist file: [blacklist.conf](https://github.com/wybiral/ipv4scan/blob/master/blacklist.conf)

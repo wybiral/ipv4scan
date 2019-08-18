@@ -7,14 +7,16 @@ import (
 	"fmt"
 	"math/rand"
 	"net"
+	"net/url"
 	"time"
 
-	"github.com/wybiral/ipv4scan/pkg/types"
 	"golang.org/x/net/proxy"
 )
 
 // Scanner manages TCP scanning.
 type Scanner struct {
+	Port        int
+	Request     []byte
 	Threads     int
 	DialTimeout time.Duration
 	ReadTimeout time.Duration
@@ -25,24 +27,14 @@ type Scanner struct {
 // NewScanner returns new Scanner with threads count.
 func NewScanner(threads int) *Scanner {
 	return &Scanner{
+		Port:        80,
+		Request:     []byte("GET / HTTP/1.0\r\n\r\n"),
 		Threads:     threads,
 		DialTimeout: 1 * time.Second,
 		ReadTimeout: 5 * time.Second,
 		Blacklist:   &Blacklist{},
-		Dialer: &net.Dialer{
-			Timeout: 5 * time.Second,
-		},
+		Dialer:      &net.Dialer{},
 	}
-}
-
-// Return random IPv4 address
-func randomIP() net.IP {
-	i := rand.Uint32()
-	a := byte(i)
-	b := byte(i >> 8)
-	c := byte(i >> 16)
-	d := byte(i >> 24)
-	return net.IPv4(a, b, c, d)
 }
 
 // Read header from addr as bytes
@@ -56,7 +48,7 @@ func (s *Scanner) scan(addr string) ([]byte, error) {
 	defer conn.Close()
 	buf := make([]byte, 4096)
 	conn.SetDeadline(time.Now().Add(s.ReadTimeout))
-	_, err = conn.Write([]byte("GET / HTTP/1.0\r\n\r\n"))
+	_, err = conn.Write(s.Request)
 	if err != nil {
 		return nil, err
 	}
@@ -73,7 +65,7 @@ func (s *Scanner) scan(addr string) ([]byte, error) {
 }
 
 // Infinitely scan random addresses and pump valid results to ch
-func (s *Scanner) worker(ch chan *types.Result) {
+func (s *Scanner) worker(ch chan *Result) {
 	for {
 		var ip net.IP
 		for {
@@ -82,21 +74,49 @@ func (s *Scanner) worker(ch chan *types.Result) {
 				break
 			}
 		}
-		port := 80
+		port := s.Port
 		addr := fmt.Sprintf("%v:%d", ip, port)
 		headers, err := s.scan(addr)
 		if err != nil {
 			continue
 		}
-		ch <- &types.Result{IP: ip, Port: port, Headers: string(headers)}
+		ch <- &Result{IP: ip, Port: port, Headers: string(headers)}
 	}
 }
 
-// Start a number of workers concurrently and return result channel
-func (s *Scanner) Start() chan *types.Result {
-	ch := make(chan *types.Result)
+// SetProxy sets a proxy for the scanner by URL.
+func (s *Scanner) SetProxy(proxyURL string) error {
+	u, err := url.Parse(proxyURL)
+	if err != nil {
+		return err
+	}
+	d, err := proxy.FromURL(u, proxy.Direct)
+	if err != nil {
+		return err
+	}
+	cd, ok := d.(proxy.ContextDialer)
+	if !ok {
+		return errors.New("proxy doesn't implement ContextDialer")
+	}
+	s.Dialer = cd
+	return nil
+}
+
+// Start workers concurrently and return result channel.
+func (s *Scanner) Start() chan *Result {
+	ch := make(chan *Result)
 	for i := 0; i < s.Threads; i++ {
 		go s.worker(ch)
 	}
 	return ch
+}
+
+// Return random IPv4 address
+func randomIP() net.IP {
+	i := rand.Uint32()
+	a := byte(i)
+	b := byte(i >> 8)
+	c := byte(i >> 16)
+	d := byte(i >> 24)
+	return net.IPv4(a, b, c, d)
 }

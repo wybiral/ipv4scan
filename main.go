@@ -5,23 +5,21 @@ import (
 	"flag"
 	"log"
 	"math/rand"
-	"net/url"
 	"os"
 	"time"
 
 	"github.com/wybiral/ipv4scan/pkg/scan"
-	"golang.org/x/net/proxy"
 )
 
 func main() {
-	rand.Seed(time.Now().UTC().UnixNano())
+	rand.Seed(time.Now().UnixNano())
 	// Setup blacklist flag
-	blacklist := "configs/blacklist.conf"
+	blacklist := "blacklist.conf"
 	flag.StringVar(
 		&blacklist,
 		"b",
 		blacklist,
-		"blacklist file containing CIDR notation",
+		"blacklist file",
 	)
 	// Setup threads flag
 	threads := 100
@@ -37,11 +35,11 @@ func main() {
 		&proxyURL,
 		"p",
 		proxyURL,
-		"proxy URL (optional)",
+		"proxy URL",
 	)
 	flag.Parse()
-	// Create scanner and (optionally) load blacklist
 	scanner := scan.NewScanner(threads)
+	// optionally setup blacklist
 	if len(blacklist) > 0 {
 		err := scanner.Blacklist.Parse(blacklist)
 		if err != nil {
@@ -50,19 +48,10 @@ func main() {
 	}
 	// optionally setup proxy
 	if len(proxyURL) > 0 {
-		u, err := url.Parse(proxyURL)
+		err := scanner.SetProxy(proxyURL)
 		if err != nil {
 			log.Fatal(err)
 		}
-		d, err := proxy.FromURL(u, proxy.Direct)
-		if err != nil {
-			log.Fatal(err)
-		}
-		cd, ok := d.(proxy.ContextDialer)
-		if !ok {
-			log.Fatal("proxy doesn't implement ContextDialer")
-		}
-		scanner.Dialer = cd
 	}
 	encoder := json.NewEncoder(os.Stdout)
 	for result := range scanner.Start() {

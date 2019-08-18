@@ -1,8 +1,6 @@
-package types
+package scan
 
-import (
-	"net"
-)
+import "net"
 
 // Result represents one scan result.
 type Result struct {
