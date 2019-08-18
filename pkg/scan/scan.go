@@ -28,7 +28,7 @@ type Scanner struct {
 func NewScanner(threads int) *Scanner {
 	return &Scanner{
 		Port:        80,
-		Request:     []byte("GET / HTTP/1.0\r\n\r\n"),
+		Request:     []byte("GET / HTTP/1.0"),
 		Threads:     threads,
 		DialTimeout: 1 * time.Second,
 		ReadTimeout: 5 * time.Second,
@@ -49,6 +49,10 @@ func (s *Scanner) scan(addr string) ([]byte, error) {
 	buf := make([]byte, 4096)
 	conn.SetDeadline(time.Now().Add(s.ReadTimeout))
 	_, err = conn.Write(s.Request)
+	if err != nil {
+		return nil, err
+	}
+	_, err = conn.Write([]byte("\r\n\r\n"))
 	if err != nil {
 		return nil, err
 	}

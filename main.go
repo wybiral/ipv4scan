@@ -13,7 +13,7 @@ import (
 
 func main() {
 	rand.Seed(time.Now().UnixNano())
-	// Setup blacklist flag
+	// setup blacklist flag
 	blacklist := "blacklist.conf"
 	flag.StringVar(
 		&blacklist,
@@ -21,7 +21,7 @@ func main() {
 		blacklist,
 		"blacklist file",
 	)
-	// Setup threads flag
+	// setup threads flag
 	threads := 100
 	flag.IntVar(
 		&threads,
@@ -29,7 +29,7 @@ func main() {
 		threads,
 		"number of scanner threads",
 	)
-	// Setup proxy flag
+	// setup proxy flag
 	proxyURL := ""
 	flag.StringVar(
 		&proxyURL,
@@ -37,21 +37,33 @@ func main() {
 		proxyURL,
 		"proxy URL",
 	)
+	// setup request flag
+	request := "GET / HTTP/1.0"
+	flag.StringVar(
+		&request,
+		"r",
+		request,
+		"HTTP request",
+	)
 	flag.Parse()
 	scanner := scan.NewScanner(threads)
-	// optionally setup blacklist
+	// setup blacklist
 	if len(blacklist) > 0 {
 		err := scanner.Blacklist.Parse(blacklist)
 		if err != nil {
 			log.Fatal(err)
 		}
 	}
-	// optionally setup proxy
+	// setup proxy
 	if len(proxyURL) > 0 {
 		err := scanner.SetProxy(proxyURL)
 		if err != nil {
 			log.Fatal(err)
 		}
+	}
+	// setup request
+	if len(request) > 0 {
+		scanner.Request = []byte(request)
 	}
 	encoder := json.NewEncoder(os.Stdout)
 	for result := range scanner.Start() {
