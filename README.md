@@ -1,17 +1,21 @@
 # ipv4scan
 IoT device scanner.
-### Install dependencies
+### Download latest
+All binary releases can be found [here](https://github.com/wybiral/ipv4scan/releases)
+### Build from source
 ```
 go get github.com/wybiral/ipv4scan
-```
-### Build
-```
 go build github.com/wybiral/ipv4scan
 ```
+
 ### Usage
 Specify thread count:
 ```
 ./ipv4scan -n 1000
+```
+Specify HTTP port:
+```
+./ipv4scan -p 8080
 ```
 Specify blacklist:
 ```
