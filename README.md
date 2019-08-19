@@ -1,7 +1,9 @@
 # ipv4scan
-IoT device scanner.
+IoT device scanner. Randomly scan the IPv4 address space and collect a real-time JSON stream of all HTTP devices that are found. This stream can then by piped into real-time filters and analytics or piped into storage to be searched as your own personal shodan.
+
 ## Download latest
 All binary releases can be found [here](https://github.com/wybiral/ipv4scan/releases).
+
 ## Build from source
 ```
 go get github.com/wybiral/ipv4scan
